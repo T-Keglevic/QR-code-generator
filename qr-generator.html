@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1a1a2e;
+            color: #eaeaea;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #16213e;
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #b8b8b8;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #2a2a4a;
+            border-radius: 8px;
+            background-color: #0f0f23;
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #4a6cf7;
+        }
+
+        input[type="text"]::placeholder {
+            color: #666;
+        }
+
+        .color-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .color-input {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #2a2a4a;
+            border-radius: 8px;
+            background-color: #0f0f23;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 4px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background-color: #0f0f23;
+            border-radius: 8px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #4a6cf7;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            color: #eaeaea;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4a6cf7, #6366f1);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(74, 108, 247, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .qr-container {
+            margin-top: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        #qrcode {
+            padding: 16px;
+            background-color: #fff;
+            border-radius: 12px;
+            display: none;
+        }
+
+        #qrcode.transparent-bg {
+            background: repeating-conic-gradient(#808080 0% 25%, #c0c0c0 0% 50%) 50% / 16px 16px;
+        }
+
+        #qrcode img, #qrcode canvas {
+            display: block;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            padding: 12px 24px;
+            width: auto;
+            display: none;
+        }
+
+        .download-btn:hover {
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            flex: 1;
+            min-width: calc(50% - 4px);
+            padding: 10px;
+            font-size: 0.85rem;
+            background: #2a2a4a;
+            border: 2px solid transparent;
+        }
+
+        .preset-btn:hover {
+            background: #3a3a5a;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .preset-btn.active {
+            border-color: #4a6cf7;
+            background: #2a2a4a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Generator</h1>
+        
+        <div class="input-group">
+            <label for="url">Enter URL</label>
+            <input type="text" id="url" placeholder="https://example.com">
+        </div>
+
+        <label>Style Presets</label>
+        <div class="preset-buttons">
+            <button type="button" class="preset-btn active" onclick="applyPreset('default')">Default</button>
+            <button type="button" class="preset-btn" onclick="applyPreset('inverted')">Inverted</button>
+        </div>
+
+        <div class="color-options">
+            <div class="color-input">
+                <label for="bgColor">Background Color</label>
+                <input type="color" id="bgColor" value="#ffffff">
+            </div>
+            <div class="color-input">
+                <label for="fgColor">Code Color</label>
+                <input type="color" id="fgColor" value="#000000">
+            </div>
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="transparent">
+            <label for="transparent">Transparent Background</label>
+        </div>
+
+        <button onclick="generateQR()">Generate QR Code</button>
+
+        <div class="qr-container">
+            <div id="qrcode"></div>
+            <button class="download-btn" onclick="downloadQR()">Download PNG</button>
+        </div>
+    </div>
+
+    <script>
+        let qrcode = null;
+
+        const presets = {
+            default: { bg: '#ffffff', fg: '#000000', transparent: false },
+            inverted: { bg: '#000000', fg: '#ffffff', transparent: false }
+        };
+
+        function applyPreset(name) {
+            const preset = presets[name];
+            document.getElementById('bgColor').value = preset.bg;
+            document.getElementById('fgColor').value = preset.fg;
+            document.getElementById('transparent').checked = preset.transparent;
+
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function generateQR() {
+            const url = document.getElementById('url').value.trim();
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            const bgColor = document.getElementById('bgColor').value;
+            const fgColor = document.getElementById('fgColor').value;
+            const transparent = document.getElementById('transparent').checked;
+
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = '';
+            qrcodeDiv.style.display = 'block';
+            
+            if (transparent) {
+                qrcodeDiv.classList.add('transparent-bg');
+            } else {
+                qrcodeDiv.classList.remove('transparent-bg');
+            }
+
+            qrcode = new QRCode(qrcodeDiv, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: fgColor,
+                colorLight: transparent ? 'rgba(0,0,0,0)' : bgColor,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            document.querySelector('.download-btn').style.display = 'block';
+        }
+
+        function downloadQR() {
+            const qrcodeDiv = document.getElementById('qrcode');
+            const canvas = qrcodeDiv.querySelector('canvas');
+            const img = qrcodeDiv.querySelector('img');
+            
+            let dataURL;
+            
+            if (canvas) {
+                dataURL = canvas.toDataURL('image/png');
+            } else if (img) {
+                // If library generated an img instead of canvas, convert it
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = img.width;
+                tempCanvas.height = img.height;
+                const ctx = tempCanvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                dataURL = tempCanvas.toDataURL('image/png');
+            }
+            
+            if (dataURL) {
+                const link = document.createElement('a');
+                link.download = 'qrcode.png';
+                link.href = dataURL;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        // Generate on Enter key
+        document.getElementById('url').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateQR();
+            }
+        });
+
+        // Clear active preset when manually changing colors
+        document.getElementById('bgColor').addEventListener('input', clearActivePreset);
+        document.getElementById('fgColor').addEventListener('input', clearActivePreset);
+        document.getElementById('transparent').addEventListener('change', clearActivePreset);
+
+        function clearActivePreset() {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+        }
+    </script>
+</body>
+</html>
